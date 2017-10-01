@@ -1,0 +1,3 @@
+from news_modules import get_reuters_global_summary
+
+get_reuters_global_summary()
