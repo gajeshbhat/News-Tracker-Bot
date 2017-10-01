@@ -45,4 +45,6 @@ class News_Modules:
         return True
 
     def update_news(self):
+        self.get_reuters_global_summary()
+        self.preapre_audio()
         return True
