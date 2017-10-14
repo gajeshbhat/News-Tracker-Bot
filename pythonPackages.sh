@@ -11,3 +11,6 @@ pip install pymongo
 
 #Python scheduler
 pip install APScheduler
+
+#BeautifulSoup
+pip install BeautifulSoup
