@@ -14,3 +14,6 @@ pip install APScheduler
 
 #BeautifulSoup
 pip install BeautifulSoup
+
+#Create folder for audio summary
+mkdir audio_summary

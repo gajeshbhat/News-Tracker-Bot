@@ -93,8 +93,8 @@ class News_Modules:
 
     def get_text_summary(self,agency_name):
         news_article_list = self.news_db.news_articles.find({'search_id':str(agency_name)})
-        summary_report = '\t*Breaking Headlines :*\n'
+        summary_report = '\t*Breaking Headlines :*\n\n'
         for articles in news_article_list:
             for article in articles['articles']:
-                summary_report+='['+ article['title'] +']('+ (article['url']) + ')\n'
+                summary_report+='['+ article['title'] +']('+ (article['url']) + ')\n\n'
         return summary_report
