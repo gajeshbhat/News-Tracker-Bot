@@ -1,2 +1,2 @@
-# Latest-News-Delivery
-Latest News Delivery System.
+# Zabda
+Get the latest news with audio summaries. @Zabda on telegram.
