@@ -1,11 +1,9 @@
 import requests
 import os
 import json
-from pprint import pprint
-from BeautifulSoup import BeautifulSoup
 from pymongo import MongoClient
 from gtts import gTTS
-from urllib2 import urlopen, Request
+
 
 
 class News_Modules:
@@ -29,12 +27,12 @@ class News_Modules:
             summary_desc+= "\n For more recent updates refresh every hour."
             self.preapre_news_audio(article['search_id'],article['lang'],summary_desc)
 
-    def get_raw_json(self,url=None):
-        headers = {'X-Api-Key': '%s' % str(os.getenv('NEWSAPI'))}
-        request = Request(url, headers=headers)
-        response = urlopen(request)
-        raw_json = json.loads(response.read())
-        return raw_json
+    def get_raw_json(self,url):
+        response = requests.get(url,params={'apiKey':str(os.getenv('NEWSAPI'))})
+        if response.json()['status'] == "error":
+            print("Error")
+        else:
+            return response.json()['articles']
 
     def refresh_news_sources(self):
         source_fetch_url = 'https://newsapi.org/v1/sources'
@@ -57,39 +55,14 @@ class News_Modules:
         articles_collection = self.news_db.news_articles
         self.news_db.news_articles.delete_many({})
         for article in self.news_db.news_sources.find({}):
-            article_json=self.get_raw_json(article['api_url'])
-            for edit_article in article_json['articles']:
-                del edit_article['urlToImage']
-                del edit_article['author']
-
+            article_json = self.get_raw_json(article['api_url'])
             news_articles={
             'name':article['name'],
             'search_id':article['search_id'],
             'lang':article['lang'],
-            'articles':article_json['articles']
+            'articles':article_json,
             }
             self.news_db.news_articles.insert(news_articles,check_keys=False)
-
-    # Not integrated yet..But works independently.
-    def get_reuters_global_feed(self):
-        summary_page = requests.get("http://www.reuters.com/news/archive/worldNews?date=today")
-        content_soup = BeautifulSoup(summary_page.content)
-        div_soup = content_soup.findAll('div',{'class':'story-content'})
-        clear_db = self.current_summary.delete_many({})
-
-        if(summary_page.status_code != 200):
-            print "Error downloading page."
-
-        for div in div_soup:
-            article_link = div.findNext('a',href=True)
-            article_heading = div.findNext('h3')
-            article_content_summary = div.findNext('p')
-            news_article={
-            "Headline":article_heading.text,
-            "Link":"http://www.reuters.com/" + article_link['href'],
-            "Summary" : article_content_summary.text
-            }
-            self.current_summary.insert_one(news_article)
 
     def get_text_summary(self,agency_name):
         news_article_list = self.news_db.news_articles.find({'search_id':str(agency_name)})
@@ -98,3 +71,12 @@ class News_Modules:
             for article in articles['articles']:
                 summary_report+='['+ article['title'] +']('+ (article['url']) + ')\n\n'
         return summary_report
+
+
+def main():
+    nw = News_Modules()
+    nw.fetch_news_summary()
+    #nw.curate_news_summary()
+
+if __name__ == '__main__':
+    main()

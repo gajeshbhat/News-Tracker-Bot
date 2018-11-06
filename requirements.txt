@@ -1,4 +1,4 @@
 python-telegram-bot
 gtts
 pymongo
-bs4
+requests
