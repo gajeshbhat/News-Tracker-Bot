@@ -1,5 +1,4 @@
 python-telegram-bot
 gtts
 pymongo
-APScheduler
 bs4
