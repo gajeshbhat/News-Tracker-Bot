@@ -3,8 +3,13 @@ import os
 import json
 from pymongo import MongoClient
 from gtts import gTTS
+from subprocess import call
 
+SOURCE = "data/audio_summary_temp/"
+DESTINATION = "data/audio_summary/"
 
+def cp_dir(source, target):
+    call(['cp', '-r', source, target])
 
 class News_Modules:
     client = MongoClient('localhost',27017)
@@ -13,19 +18,22 @@ class News_Modules:
     def preapre_news_audio(self,id,lang_value,summary_desc):
         news_string = summary_desc
         news_audio = gTTS(text=news_string,lang=lang_value)
-        news_audio.save("audio_summary/" + str(id) + "-summary.mp3")
+        news_audio.save("/data/audio_summary_temp/" + str(id) + "-summary.mp3")
 
     def curate_news_summary(self):
-        news_articles = self.news_db.news_articles.find({})
+        news_articles = self.news_db.news_articles.find({})[10:]
         for article in news_articles:
             summary_desc = '\n Recent headlines in '+ str(article['name']) +'  today are\n'
             for desc in article['articles']:
                 if(desc['description'] ==  None):
-                    summary_desc+=desc['title']+"\n"+ "Read the story on" + article['name']+ "\n In other news \n"
+                    summary_desc+=desc['title'] + "\n In other news \n"
                 else:
                     summary_desc+=desc['title']+"\n"+desc['description'] + "\n In other news \n"
-            summary_desc+= "\n For more recent updates refresh every hour."
-            self.preapre_news_audio(article['search_id'],article['lang'],summary_desc)
+            summary_desc+= "\n check back later for updates."
+            try:
+                self.preapre_news_audio(article['search_id'],article['lang'],summary_desc)
+            except:
+                continue
 
     def get_raw_json(self,url):
         response = requests.get(url,params={'apiKey':str(os.getenv('NEWSAPI'))})
@@ -75,8 +83,9 @@ class News_Modules:
 
 def main():
     nw = News_Modules()
-    nw.fetch_news_summary()
+    #nw.fetch_news_summary()
     #nw.curate_news_summary()
+    cp_dir(SOURCE,DESTINATION)
 
 if __name__ == '__main__':
     main()
