@@ -1,17 +1,9 @@
 import requests
-import os
-import json
-from pymongo import MongoClient
-from gtts import gTTS
+from utils import *
 
 class News_Modules:
     client = MongoClient('localhost',27017)
     news_db =  client.news_db
-
-    def preapre_news_audio(self,id,lang_value,summary_desc):
-        news_string = summary_desc
-        news_audio = gTTS(text=news_string,lang=lang_value)
-        news_audio.save("/data/audio_summary_temp/" + str(id) + "-summary.mp3")
 
     def curate_news_summary(self):
         news_articles = self.news_db.news_articles.find({})[10:]
@@ -65,20 +57,8 @@ class News_Modules:
             }
             self.news_db.news_articles.insert(news_articles,check_keys=False)
 
-    def get_text_summary(self,agency_name):
-        news_article_list = self.news_db.news_articles.find({'search_id':str(agency_name)})
-        summary_report = '\t*Breaking Headlines :*\n\n'
-        for articles in news_article_list:
-            for article in articles['articles']:
-                summary_report+='['+ article['title'] +']('+ (article['url']) + ')\n\n'
-        return summary_report
-
-
 def main():
-    nw = News_Modules()
-    #nw.fetch_news_summary()
-    #nw.curate_news_summary()
-    cp_dir(SOURCE,DESTINATION)
+    pass
 
 if __name__ == '__main__':
     main()
