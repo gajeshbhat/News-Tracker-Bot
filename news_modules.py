@@ -3,13 +3,6 @@ import os
 import json
 from pymongo import MongoClient
 from gtts import gTTS
-from subprocess import call
-
-SOURCE = "data/audio_summary_temp/"
-DESTINATION = "data/audio_summary/"
-
-def cp_dir(source, target):
-    call(['cp', '-r', source, target])
 
 class News_Modules:
     client = MongoClient('localhost',27017)
