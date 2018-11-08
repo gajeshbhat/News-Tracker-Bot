@@ -1,4 +1,5 @@
 import requests
+from pymongo import MongoClient
 from utils import *
 
 class News_Modules:
@@ -16,16 +17,16 @@ class News_Modules:
                     summary_desc+=desc['title']+"\n"+desc['description'] + "\n In other news \n"
             summary_desc+= "\n check back later for updates."
             try:
-                self.preapre_news_audio(article['search_id'],article['lang'],summary_desc)
+                preapre_news_audio(article['search_id'],article['lang'],summary_desc)
             except:
-                continue
+                print(article['search_id'])
 
     def get_raw_json(self,url):
-        response = requests.get(url,params={'apiKey':str(os.getenv('NEWSAPI'))})
+        response = requests.get(url,params={'apiKey':str(getenv('NEWSAPI'))})
         if response.json()['status'] == "error":
             print("Error")
         else:
-            return response.json()['articles']
+            return response.json()
 
     def refresh_news_sources(self):
         source_fetch_url = 'https://newsapi.org/v1/sources'
@@ -48,7 +49,7 @@ class News_Modules:
         articles_collection = self.news_db.news_articles
         self.news_db.news_articles.delete_many({})
         for article in self.news_db.news_sources.find({}):
-            article_json = self.get_raw_json(article['api_url'])
+            article_json = self.get_raw_json(article['api_url'])["articles"]
             news_articles={
             'name':article['name'],
             'search_id':article['search_id'],
@@ -66,7 +67,10 @@ class News_Modules:
             return summary_report
 
 def main():
-    pass
+    nw = News_Modules()
+    nw.fetch_news_summary()
+    nw.curate_news_summary()
+    copy_all_dir_contents(SOURCE,DESTINATION)
 
 if __name__ == '__main__':
     main()

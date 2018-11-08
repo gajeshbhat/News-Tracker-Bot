@@ -1,5 +1,6 @@
 python-telegram-bot
 gtts
+gtts-token==1.1.2
 pymongo
 bs4
 requests
