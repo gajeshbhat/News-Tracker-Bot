@@ -6,8 +6,8 @@ class News_Modules:
     client = MongoClient('localhost',27017)
     news_db =  client.news_db
 
-    def curate_news_summary(self):
-        news_articles = self.news_db.news_articles.find({})[10:]
+    def prepare_news_summary(self):
+        news_articles = self.news_db.news_articles.find({})
         for article in news_articles:
             summary_desc = '\n Recent headlines in '+ str(article['name']) +'  today are\n'
             for desc in article['articles']:
@@ -21,7 +21,7 @@ class News_Modules:
             except:
                 print(article['search_id'])
 
-    def get_raw_json(self,url):
+    def get_news_details(self,url):
         response = requests.get(url,params={'apiKey':str(getenv('NEWSAPI'))})
         if response.json()['status'] == "error":
             print("Error")
@@ -67,10 +67,7 @@ class News_Modules:
             return summary_report
 
 def main():
-    nw = News_Modules()
-    nw.fetch_news_summary()
-    nw.curate_news_summary()
-    copy_all_dir_contents(SOURCE,DESTINATION)
+    pass
 
 if __name__ == '__main__':
     main()
