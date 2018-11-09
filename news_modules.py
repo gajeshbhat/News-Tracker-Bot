@@ -1,39 +1,18 @@
 import requests
+from side_utils import *
 from pymongo import MongoClient
-from utils import *
+from os import getenv
 
 class News_Modules:
     client = MongoClient('localhost',27017)
     news_db =  client.news_db
 
-    def prepare_news_summary(self):
-        news_articles = self.news_db.news_articles.find({})
-        for article in news_articles:
-            summary_desc = '\n Recent headlines in '+ str(article['name']) +'  today are\n'
-            for desc in article['articles']:
-                if(desc['description'] ==  None):
-                    summary_desc+=desc['title'] + "\n In other news \n"
-                else:
-                    summary_desc+=desc['title']+"\n"+desc['description'] + "\n In other news \n"
-            summary_desc+= "\n check back later for updates."
-            try:
-                preapre_news_audio(article['search_id'],article['lang'],summary_desc)
-            except:
-                print(article['search_id'])
-
     def get_news_details(self,url):
-        response = requests.get(url,params={'apiKey':str(getenv('NEWSAPI'))})
-        if response.json()['status'] == "error":
-            print("Error")
-        else:
-            return response.json()
+        response = requests.get(url,params={'apiKey':getenv('NEWSAPI')})
+        return response.json()
 
-    def refresh_news_sources(self):
-        source_fetch_url = 'https://newsapi.org/v1/sources'
-        sources_db = self.client.news_db
-        news_sources = sources_db.news_sources
-        news_sources.delete_many({})
-        for source in self.get_raw_json(url=source_fetch_url)['sources']:
+    def create_news_sources(self,source_list):
+        for source in source_list:
             source_info={
             "search_id":source['id'],
             "name":source['name'],
@@ -42,19 +21,16 @@ class News_Modules:
             "site_url":source['url'],
             "api_url":"https://newsapi.org/v1/articles?source="+str(source['id'])
             }
-            news_sources.insert_one(source_info)
+            self.news_db.news_sources.insert_one(source_info)
 
-    def fetch_news_summary(self):
-        self.refresh_news_sources() # Refresh API List
-        articles_collection = self.news_db.news_articles
-        self.news_db.news_articles.delete_many({})
-        for article in self.news_db.news_sources.find({}):
-            article_json = self.get_raw_json(article['api_url'])["articles"]
+    def get_news_summary(self,news_source_list):
+        for source in news_source_list:
+            article_list = self.get_news_details(source['api_url'])['articles']
             news_articles={
-            'name':article['name'],
-            'search_id':article['search_id'],
-            'lang':article['lang'],
-            'articles':article_json,
+            'name':source['name'],
+            'search_id':source['search_id'],
+            'lang':source['lang'],
+            'articles':article_list,
             }
             self.news_db.news_articles.insert(news_articles,check_keys=False)
 
@@ -66,8 +42,17 @@ class News_Modules:
                 summary_report+='['+ article['title'] +']('+ (article['url']) + ')\n\n'
             return summary_report
 
-def main():
-    pass
-
-if __name__ == '__main__':
-    main()
+    def prepare_news_summary(self):
+        news_articles = self.news_db.news_articles.find({})
+        for article in news_articles:
+            summary_desc = '\n Recent headlines in '+ str(article['name']) +'  today are\n'
+            for desc in article['articles']:
+                if(desc['description'] ==  None):
+                    summary_desc+=desc['title'] + "\n In other news \n"
+                else:
+                    summary_desc+=desc['title']+"\n"+desc['description'] + "\n In other news \n"
+            summary_desc+= "\n Check back later for updates."
+            try:
+                preapre_news_audio(article['search_id'],article['lang'],summary_desc)
+            except Exception as e:
+                log_error_to_file(e,NEWS_MODULE_LOGS)
