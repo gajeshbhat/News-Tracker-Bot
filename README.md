@@ -1,2 +1,2 @@
-# Zabda
-Get the latest news with audio summaries. @Zabda on telegram.
+# Shabda - News made easy
+
