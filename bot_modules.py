@@ -36,11 +36,24 @@ class Chats(object):
 def run_every_two_hours(bot, job):
     constant_refresh_db()
 
+help_text = '''
+* Welcome to Shabda *
+** One stop shop for news from over 70 sources in several langauges. **
+
+1. /help : Display help documentation
+2. /latest : Display choices from news sources to display the breaking news.
+3. /start : Display Start message
+
+Any other messages will be rejected.
+
+Please feel free to send me hugs or bugs at [Github Repo](https://github.com/gajeshbhat/Shabda).
+'''
+
 # Bot and dispatcher initialization
 news_bot = telegram.Bot(token=os.getenv('ZABDAKEY'))
 message_handle_updater = Updater(token=os.getenv('ZABDAKEY'))
-refresh_job_queue = message_handle_updater.job_queue
-refresh_job_queue.run_repeating(run_every_two_hours,interval=7200, first=0)
+#refresh_job_queue = message_handle_updater.job_queue
+#refresh_job_queue.run_repeating(run_every_two_hours,interval=7200, first=0)
 user_conversations = Chats()
 
 # Initate dispatcher
@@ -51,7 +64,7 @@ def start_bot(news_bot, user_chat_session_id):
     news_bot.send_message(chat_id=user_chat_session_id.message.chat_id, text="Hello! Please type /help to view commands.")
 
 def display_help(news_bot, user_chat_session_id):
-    news_bot.send_message(chat_id=user_chat_session_id.message.chat_id, text="Help document.")
+    news_bot.send_message(chat_id=user_chat_session_id.message.chat_id,text=help_text,disable_web_page_preview=True,parse_mode=telegram.ParseMode.MARKDOWN)
 
 def other_messages(news_bot, user_chat_session_id):
     if user_chat_session_id.message.text == "Cancel":
