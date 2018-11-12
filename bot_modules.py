@@ -52,8 +52,8 @@ Please feel free to send me hugs or bugs at [Github Repo](https://github.com/gaj
 # Bot and dispatcher initialization
 news_bot = telegram.Bot(token=os.getenv('ZABDAKEY'))
 message_handle_updater = Updater(token=os.getenv('ZABDAKEY'))
-#refresh_job_queue = message_handle_updater.job_queue
-#refresh_job_queue.run_repeating(run_every_two_hours,interval=7200, first=0)
+refresh_job_queue = message_handle_updater.job_queue
+refresh_job_queue.run_repeating(run_every_two_hours,interval=7200, first=0)
 user_conversations = Chats()
 
 # Initate dispatcher
