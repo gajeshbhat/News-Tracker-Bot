@@ -2,6 +2,7 @@ import requests
 from side_utils import *
 from pymongo import MongoClient
 from os import getenv
+from gtts import gTTS
 
 class News_Modules:
     client = MongoClient('localhost',27017)
@@ -36,11 +37,28 @@ class News_Modules:
 
     def get_text_summary(self,agency_name):
         news_article_list = self.news_db.news_articles.find({'search_id':str(agency_name)})
-        summary_report = '\t*Breaking Headlines :*\n\n'
+        summary_report = '\t*Breaking Headlines are :*\n\n'
         for articles in news_article_list:
             for article in articles['articles']:
                 summary_report+='['+ article['title'] +']('+ (article['url']) + ')\n\n'
             return summary_report
+
+    def prepare_news_audio(self,id,lang_value,summary_desc):
+        news_audio = gTTS(text=summary_desc,lang=lang_value)
+        news_audio.save("audio_summary/" + str(id) + "-summary.mp3")
+
+    def get_agency_id(self,agency_name):
+        query = {"name":str(agency_name)}
+        news_source = self.news_db.news_sources.find_one(query)
+        return news_source['search_id']
+
+    def get_text_summary(self,agency_name):
+        news_article_list = self.news_db.news_articles.find({'search_id':str(agency_name)})
+        summary_report = '\t* Breaking Headlines are :*\n\n'
+        for articles in news_article_list:
+            for article in articles['articles']:
+                summary_report+='['+ article['title'] +']('+ (article['url']) + ')\n\n'
+        return summary_report
 
     def prepare_news_summary(self):
         news_articles = self.news_db.news_articles.find({})
@@ -52,7 +70,4 @@ class News_Modules:
                 else:
                     summary_desc+=desc['title']+"\n"+desc['description'] + "\n In other news \n"
             summary_desc+= "\n Check back later for updates."
-            try:
-                preapre_news_audio(article['search_id'],article['lang'],summary_desc)
-            except Exception as e:
-                log_error_to_file(e,NEWS_MODULE_LOGS)
+            self.prepare_news_audio(article['search_id'],article['lang'],summary_desc)
