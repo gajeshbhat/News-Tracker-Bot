@@ -3,7 +3,8 @@ import logging
 import os
 from telegram.ext import Updater,CommandHandler, MessageHandler, Filters
 from pymongo import MongoClient
-from side_utils import get_article_text_summary, get_agency_id
+from side_utils import get_article_text_summary,constant_refresh_db
+from news_modules import News_Modules
 
 # Chat store
 class Chats(object):
@@ -31,9 +32,15 @@ class Chats(object):
                 return True
         return False
 
+#Every two Constant Refresh
+def run_every_two_hours(bot, job):
+    constant_refresh_db()
+
 # Bot and dispatcher initialization
 news_bot = telegram.Bot(token=os.getenv('ZABDAKEY'))
 message_handle_updater = Updater(token=os.getenv('ZABDAKEY'))
+#refresh_job_queue = message_handle_updater.job_queue
+#refresh_job_queue.run_repeating(run_every_two_hours,interval=7200, first=0)
 user_conversations = Chats()
 
 # Initate dispatcher
@@ -50,24 +57,20 @@ def other_messages(news_bot, user_chat_session_id):
     if user_chat_session_id.message.text == "Cancel":
         reply_markup = telegram.ReplyKeyboardRemove()
         news_bot.send_message(chat_id=user_chat_session_id.message.chat_id, text="Action aborted.",reply_markup=reply_markup)
-
     elif user_chat_session_id.message.text == "Text Summary" and user_conversations.get(user_chat_session_id.message.chat_id) != {}:
-        send_text(user_chat_session_id)
-
+        send_text_summary(user_chat_session_id)
     elif user_chat_session_id.message.text == "Audio Summary" and user_conversations.get(user_chat_session_id.message.chat_id) != {}:
         send_audio_summary(user_chat_session_id)
-
-    elif  user_chat_session_id.message.text == "Both" and user_conversations.get(user_chat_session_id.message.chat_id) != {}:
-        send_text(user_chat_session_id)
+    elif user_chat_session_id.message.text == "Both" and user_conversations.get(user_chat_session_id.message.chat_id) != {}:
+        send_text_summary(user_chat_session_id)
         send_audio_summary(user_chat_session_id)
-
     elif user_chat_session_id.message.text in get_menu_items():
         user_conversations.add(user_chat_session_id)
         reply_markup = get_options_markup()
         news_bot.send_message(chat_id=user_chat_session_id.message.chat_id, text="Select the format of the news.",reply_markup=reply_markup)
-
     else:
         news_bot.send_message(chat_id=user_chat_session_id.message.chat_id, text="Unknown Command! Click Cancel Button to exit from menu or type /help for instructions.")
+    #clean_user_input(user_chat_session_id)
 
 def get_latest_news(news_bot, user_chat_session_id):
     source_list = get_menu_items()
@@ -89,6 +92,7 @@ news_dispatcher.add_handler(other_message_handlers)
 #Logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                      level=logging.INFO)
+
 #Helper methods
 def get_options_markup():
     news_options =[["Text Summary"],["Audio Summary"],["Both"],["Cancel"]]
@@ -126,10 +130,15 @@ def get_source_keyboard_markup(list_items):
 
 def send_text_summary(user_chat_session_id):
     text_news_summary = get_article_text_summary(user_conversations.get(user_chat_session_id.message.chat_id))
-    user_conversations.remove(user_chat_session_id.message.chat_id)
     reply_markup = telegram.ReplyKeyboardRemove()
     news_bot.send_message(chat_id=user_chat_session_id.message.chat_id, text=text_news_summary,disable_web_page_preview=True,parse_mode=telegram.ParseMode.MARKDOWN)
     news_bot.send_message(chat_id=user_chat_session_id.message.chat_id, text="Check Back later for updates.",reply_markup=reply_markup)
 
 def send_audio_summary(user_chat_session_id):
-     bot.send_audio(chat_id=update.message.chat_id, audio=open('audio_summary/'+ str(get_agency_id(user_chat_session_id.message.text)) +'-summary.mp3', 'rb'),text= "Audio summary.")
+    agency_obj = News_Modules()
+    news_bot.send_audio(chat_id=user_chat_session_id.message.chat_id, audio=open('audio_summary/'+ str(user_conversations.get(user_chat_session_id.message.chat_id)) +'-summary.mp3', 'rb'),text="Audio summary.")
+    reply_markup = telegram.ReplyKeyboardRemove()
+    news_bot.send_message(chat_id=user_chat_session_id.message.chat_id,reply_markup=reply_markup)
+
+def clean_user_input(user_chat_session_id):
+    user_conversations.remove(user_chat_session_id.message.chat_id)

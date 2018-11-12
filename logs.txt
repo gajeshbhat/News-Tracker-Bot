@@ -1,0 +1,12 @@
+
+
+Traceback (most recent call last):
+  File "/home/gajesh/Github/Zabda/side_utils.py", line 32, in constant_refresh_db
+    news_module_obj.prepare_news_summary()
+  File "/home/gajesh/Github/Zabda/news_modules.py", line 73, in prepare_news_summary
+    self.prepare_news_audio(article['name'],article['lang'],summary_desc)
+  File "/home/gajesh/Github/Zabda/news_modules.py", line 48, in prepare_news_audio
+    news_audio.save("audio_summary/" + str(name) + "-summary.mp3")
+  File "/usr/local/lib/python3.5/dist-packages/gtts/tts.py", line 246, in save
+    with open(savefile, 'wb') as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'audio_summary/Reddit /r/all-summary.mp3'

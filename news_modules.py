@@ -43,9 +43,9 @@ class News_Modules:
                 summary_report+='['+ article['title'] +']('+ (article['url']) + ')\n\n'
             return summary_report
 
-    def prepare_news_audio(self,id,lang_value,summary_desc):
+    def prepare_news_audio(self,name,lang_value,summary_desc):
         news_audio = gTTS(text=summary_desc,lang=lang_value)
-        news_audio.save("audio_summary/" + str(id) + "-summary.mp3")
+        news_audio.save("audio_summary/" + str(name) + "-summary.mp3")
 
     def get_agency_id(self,agency_name):
         query = {"name":str(agency_name)}
@@ -70,4 +70,4 @@ class News_Modules:
                 else:
                     summary_desc+=desc['title']+"\n"+desc['description'] + "\n In other news \n"
             summary_desc+= "\n Check back later for updates."
-            self.prepare_news_audio(article['search_id'],article['lang'],summary_desc)
+            self.prepare_news_audio(article['name'],article['lang'],summary_desc)
