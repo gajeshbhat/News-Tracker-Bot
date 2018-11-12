@@ -57,20 +57,23 @@ def other_messages(news_bot, user_chat_session_id):
     if user_chat_session_id.message.text == "Cancel":
         reply_markup = telegram.ReplyKeyboardRemove()
         news_bot.send_message(chat_id=user_chat_session_id.message.chat_id, text="Action aborted.",reply_markup=reply_markup)
+        clean_user_input(user_chat_session_id)
     elif user_chat_session_id.message.text == "Text Summary" and user_conversations.get(user_chat_session_id.message.chat_id) != {}:
         send_text_summary(user_chat_session_id)
+        clean_user_input(user_chat_session_id)
     elif user_chat_session_id.message.text == "Audio Summary" and user_conversations.get(user_chat_session_id.message.chat_id) != {}:
         send_audio_summary(user_chat_session_id)
+        clean_user_input(user_chat_session_id)
     elif user_chat_session_id.message.text == "Both" and user_conversations.get(user_chat_session_id.message.chat_id) != {}:
         send_text_summary(user_chat_session_id)
         send_audio_summary(user_chat_session_id)
+        clean_user_input(user_chat_session_id)
     elif user_chat_session_id.message.text in get_menu_items():
         user_conversations.add(user_chat_session_id)
         reply_markup = get_options_markup()
         news_bot.send_message(chat_id=user_chat_session_id.message.chat_id, text="Select the format of the news.",reply_markup=reply_markup)
     else:
         news_bot.send_message(chat_id=user_chat_session_id.message.chat_id, text="Unknown Command! Click Cancel Button to exit from menu or type /help for instructions.")
-    #clean_user_input(user_chat_session_id)
 
 def get_latest_news(news_bot, user_chat_session_id):
     source_list = get_menu_items()
@@ -138,7 +141,7 @@ def send_audio_summary(user_chat_session_id):
     agency_obj = News_Modules()
     news_bot.send_audio(chat_id=user_chat_session_id.message.chat_id, audio=open('audio_summary/'+ str(user_conversations.get(user_chat_session_id.message.chat_id)) +'-summary.mp3', 'rb'),text="Audio summary.")
     reply_markup = telegram.ReplyKeyboardRemove()
-    news_bot.send_message(chat_id=user_chat_session_id.message.chat_id,reply_markup=reply_markup)
+    news_bot.send_message(chat_id=user_chat_session_id.message.chat_id,text="For latest summary check back later.",reply_markup=reply_markup)
 
 def clean_user_input(user_chat_session_id):
     user_conversations.remove(user_chat_session_id.message.chat_id)
