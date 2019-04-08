@@ -1,4 +1,5 @@
-___pycache__
+*mp3
+___pycache__/
 *.pyc
 .DS_Store
-*.mp3
+logs.txt

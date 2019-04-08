@@ -6,7 +6,7 @@ from pymongo import MongoClient
 from side_utils import get_article_text_summary,constant_refresh_db
 from news_modules import News_Modules
 
-# Chat store
+# Conversation with user storage
 class Chats(object):
 
     def __init__(self):
@@ -33,39 +33,45 @@ class Chats(object):
         return False
 
 #Every two Constant Refresh
-def run_every_two_hours(bot, job):
+def timed_run(bot, job):
     constant_refresh_db()
 
 help_text = '''
 * Welcome to Shabda *
 ** One stop shop for news from over 70 sources in several langauges. **
-
 1. /help : Display help documentation
 2. /latest : Display choices from news sources to display the breaking news.
 3. /start : Display Start message
 
 Any other messages will be rejected.
-
-Please feel free to send me hugs or bugs at [Github Repo](https://github.com/gajeshbhat/Shabda).
+Please feel free to send me hugs or bugs at [Github Repo](https://github.com/gajeshbhat/Shabda) Powered by [NEWSAPI](https://newsapi.org).
 '''
 
 # Bot and dispatcher initialization
-news_bot = telegram.Bot(token=os.getenv('ZABDAKEY'))
-message_handle_updater = Updater(token=os.getenv('ZABDAKEY'))
+news_bot = telegram.Bot(token=os.getenv('SHABDA_TELE_KEY'))
+message_handle_updater = Updater(token=os.getenv('SHABDA_TELE_KEY'))
 refresh_job_queue = message_handle_updater.job_queue
-refresh_job_queue.run_repeating(run_every_two_hours,interval=7200, first=0)
+refresh_job_queue.run_repeating(timed_run,interval=21600, first=0)
 user_conversations = Chats()
 
 # Initate dispatcher
 news_dispatcher = message_handle_updater.dispatcher
 
-# Command handling methods
+# /start
 def start_bot(news_bot, user_chat_session_id):
     news_bot.send_message(chat_id=user_chat_session_id.message.chat_id, text="Hello! Please type /help to view commands.")
 
+# /help command
 def display_help(news_bot, user_chat_session_id):
     news_bot.send_message(chat_id=user_chat_session_id.message.chat_id,text=help_text,disable_web_page_preview=True,parse_mode=telegram.ParseMode.MARKDOWN)
 
+# /latest command
+def get_latest_news(news_bot, user_chat_session_id):
+    source_list = get_menu_items()
+    reply_markup = get_source_keyboard_markup(source_list)
+    news_bot.send_message(chat_id=user_chat_session_id.message.chat_id, text="Click on the feed",reply_markup=reply_markup)
+
+# Option buttons select
 def other_messages(news_bot, user_chat_session_id):
     if user_chat_session_id.message.text == "Cancel":
         reply_markup = telegram.ReplyKeyboardRemove()
@@ -87,11 +93,6 @@ def other_messages(news_bot, user_chat_session_id):
         news_bot.send_message(chat_id=user_chat_session_id.message.chat_id, text="Select the format of the news.",reply_markup=reply_markup)
     else:
         news_bot.send_message(chat_id=user_chat_session_id.message.chat_id, text="Unknown Command! Click Cancel Button to exit from menu or type /help for instructions.")
-
-def get_latest_news(news_bot, user_chat_session_id):
-    source_list = get_menu_items()
-    reply_markup = get_source_keyboard_markup(source_list)
-    news_bot.send_message(chat_id=user_chat_session_id.message.chat_id, text="Click on the feed",reply_markup=reply_markup)
 
 # Create handlers
 start_handler = CommandHandler('start', start_bot)

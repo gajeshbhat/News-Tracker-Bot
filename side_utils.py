@@ -2,7 +2,7 @@ import traceback
 from news_modules import News_Modules
 
 LOGFILE = "logs.txt"
-SOURCE_FETCH_URL = "https://newsapi.org/v1/sources"
+SOURCE_FETCH_URL = "https://newsapi.org/v2/sources"
 CONTENT_SAPERATOR = "\n\n"
 
 def hard_refresh_news_db():
@@ -26,9 +26,9 @@ def hard_refresh_news_db():
 def constant_refresh_db():
     try:
         news_module_obj = News_Modules()
-        #news_module_obj.news_db.news_articles.delete_many({})
+        news_module_obj.news_db.news_articles.delete_many({})
         news_source_list = news_module_obj.news_db.news_sources.find({})
-        #news_module_obj.get_news_summary(news_source_list)
+        news_module_obj.get_news_summary(news_source_list)
         news_module_obj.prepare_news_summary()
     except Exception as e:
         log_error_to_file(e,LOGFILE)
