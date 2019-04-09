@@ -51,7 +51,7 @@ Please feel free to send me hugs or bugs at [Github Repo](https://github.com/gaj
 news_bot = telegram.Bot(token=os.getenv('SHABDA_TELE_KEY'))
 message_handle_updater = Updater(token=os.getenv('SHABDA_TELE_KEY'))
 refresh_job_queue = message_handle_updater.job_queue
-refresh_job_queue.run_repeating(timed_run,interval=21600, first=0)
+refresh_job_queue.run_repeating(timed_run,interval=21600, first=21600)
 user_conversations = Chats()
 
 # Initate dispatcher

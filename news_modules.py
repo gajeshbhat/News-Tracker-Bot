@@ -2,7 +2,8 @@ import requests
 from side_utils import *
 from pymongo import MongoClient
 from os import getenv
-from gtts import gTTS
+from gtts import gTTS, lang
+
 
 class News_Modules:
     client = MongoClient('localhost',27017)
@@ -20,7 +21,7 @@ class News_Modules:
             "description":source['description'],
             "lang":source['language'],
             "site_url":source['url'],
-            "api_url":"https://newsapi.org/v1/articles?source="+str(source['id'])
+            "api_url":"https://newsapi.org/v2/top-headlines?sources="+str(source['id'])
             }
             self.news_db.news_sources.insert_one(source_info)
 
@@ -55,6 +56,8 @@ class News_Modules:
     def prepare_news_summary(self):
         news_articles = self.news_db.news_articles.find({})
         for article in news_articles:
+            if article['lang'] not in lang.tts_langs():
+                continue
             summary_desc = '\n Recent headlines in '+ str(article['name']) +' today are\n'
             for desc in article['articles']:
                 if(desc['description'] ==  None):
