@@ -27,7 +27,10 @@ class News_Modules:
 
     def get_news_summary(self,news_source_list):
         for source in news_source_list:
-            article_list = self.get_news_details(source['api_url'])['articles']
+            article_list_response = self.get_news_details(source['api_url'])
+            if article_list_response['status'] == 'error':
+                return article_list_response
+            article_list = article_list_response['articles']
             news_articles={
             'name':source['name'],
             'search_id':source['search_id'],
