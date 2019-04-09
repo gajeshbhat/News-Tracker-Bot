@@ -35,8 +35,8 @@ def constant_refresh_db():
         news_summary_result = news_module_obj.get_news_summary(news_source_list)
         if news_summary_result['status'] == 'error':
             log_api_error(news_summary_result,LOGFILE)
-            return
-        news_module_obj.prepare_news_summary()
+        else:
+            news_module_obj.prepare_news_summary()
     except Exception as e:
         log_error_to_file(e,LOGFILE)
 

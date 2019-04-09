@@ -4,7 +4,6 @@ from pymongo import MongoClient
 from os import getenv
 from gtts import gTTS, lang
 
-
 class News_Modules:
     client = MongoClient('localhost',27017)
     news_db =  client.news_db
@@ -48,6 +47,9 @@ class News_Modules:
         news_source = self.news_db.news_sources.find_one(query)
         return news_source['search_id']
 
+    def get_agency_obj(self,search_id):
+        return self.news_db.news_sources.find_one({"search_id":str(search_id)})
+
     def get_text_summary(self,agency_id):
         news_article_list = self.news_db.news_articles.find({'search_id':str(agency_id)})
         summary_report = '\t* Breaking Headlines are :*\n\n'
@@ -59,13 +61,18 @@ class News_Modules:
     def prepare_news_summary(self):
         news_articles = self.news_db.news_articles.find({})
         for article in news_articles:
-            if article['lang'] not in lang.tts_langs():
+            try:
+                if article['lang'] not in lang.tts_langs():
+                    continue
+                summary_desc = '\n Recent headlines in '+ str(article['name']) +' today are\n'
+                for desc in article['articles']:
+                    if(desc['description'] ==  None):
+                        summary_desc+=desc['title'] + "\n In other news \n"
+                    else:
+                        summary_desc+=desc['title']+"\n"+desc['description'] + "\n In other news \n"
+                summary_desc+= "\n Check back later for updates."
+                self.prepare_news_audio(article['name'],article['lang'],summary_desc)
+            except Exception as e:
+                with open(LOG_FILE_TYPE, 'a') as filePointer:
+                    filePointer.write(str(traceback.format_exc()) + CONTENT_SAPERATOR)
                 continue
-            summary_desc = '\n Recent headlines in '+ str(article['name']) +' today are\n'
-            for desc in article['articles']:
-                if(desc['description'] ==  None):
-                    summary_desc+=desc['title'] + "\n In other news \n"
-                else:
-                    summary_desc+=desc['title']+"\n"+desc['description'] + "\n In other news \n"
-            summary_desc+= "\n Check back later for updates."
-            self.prepare_news_audio(article['name'],article['lang'],summary_desc)

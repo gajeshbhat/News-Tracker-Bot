@@ -5,6 +5,7 @@ from telegram.ext import Updater,CommandHandler, MessageHandler, Filters
 from pymongo import MongoClient
 from side_utils import get_article_text_summary,constant_refresh_db
 from news_modules import News_Modules
+from gtts import lang
 
 # Conversation with user storage
 class Chats(object):
@@ -36,14 +37,22 @@ class Chats(object):
 def timed_run(bot, job):
     constant_refresh_db()
 
+# Audio support_check
+def is_audio_exist(agency_name):
+    lang_test = News_Modules()
+    search_id = lang_test.get_agency_id(agency_name)
+    source = lang_test.get_agency_obj(search_id)
+    if source['lang'] in lang.tts_langs():
+        return True
+    return False
+
 help_text = '''
 * Welcome to Shabda *
-** One stop shop for news from over 70 sources in several langauges. **
-1. /help : Display help documentation
-2. /latest : Display choices from news sources to display the breaking news.
-3. /start : Display Start message
-
-Any other messages will be rejected.
+One stop shop for news from over 70 sources in several langauges.\n
+1. /latest : Display choices from news sources to display the breaking news.
+2. /start : Display Start message
+3. /help : Display help documentation
+Any other messages will be rejected.\n
 Please feel free to send me hugs or bugs at [Github Repo](https://github.com/gajeshbhat/Shabda) Powered by [NEWSAPI](https://newsapi.org).
 '''
 
@@ -89,7 +98,7 @@ def other_messages(news_bot, user_chat_session_id):
         clean_user_input(user_chat_session_id)
     elif user_chat_session_id.message.text in get_menu_items():
         user_conversations.add(user_chat_session_id)
-        reply_markup = get_options_markup()
+        reply_markup = get_options_markup(user_chat_session_id)
         news_bot.send_message(chat_id=user_chat_session_id.message.chat_id, text="Select the format of the news.",reply_markup=reply_markup)
     else:
         news_bot.send_message(chat_id=user_chat_session_id.message.chat_id, text="Unknown Command! Click Cancel Button to exit from menu or type /help for instructions.")
@@ -111,8 +120,10 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
                      level=logging.INFO)
 
 #Helper methods
-def get_options_markup():
+def get_options_markup(user_chat_session_id):
     news_options =[["Text Summary"],["Audio Summary"],["Both"],["Cancel"]]
+    if is_audio_exist(user_chat_session_id.message.text) == False:
+        news_options.remove(["Audio Summary"],["Both"])
     reply_markup = telegram.ReplyKeyboardMarkup(news_options,resize_keyboard=True)
     return reply_markup
 
@@ -133,7 +144,7 @@ def get_source_keyboard_markup(list_items):
     col_counter = 0
     temp_append_list = list()
     for idx in range(0,len(list_items)-1):
-        if idx == 98:
+        if idx == 96:
             markup_list.append([list_items[idx+1],"Cancel"])
             break
         if col_counter == 3:
