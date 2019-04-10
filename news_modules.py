@@ -73,6 +73,6 @@ class News_Modules:
                 summary_desc+= "\n Check back later for updates."
                 self.prepare_news_audio(article['name'],article['lang'],summary_desc)
             except Exception as e:
-                with open(LOG_FILE_TYPE, 'a') as filePointer:
+                with open(LOGFILE, 'a') as filePointer:
                     filePointer.write(str(traceback.format_exc()) + CONTENT_SAPERATOR)
                 continue
