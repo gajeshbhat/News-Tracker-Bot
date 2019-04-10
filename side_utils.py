@@ -33,10 +33,7 @@ def constant_refresh_db():
         news_module_obj.news_db.news_articles.delete_many({})
         news_source_list = news_module_obj.news_db.news_sources.find({})
         news_summary_result = news_module_obj.get_news_summary(news_source_list)
-        if news_summary_result['status'] == 'error':
-            log_api_error(news_summary_result,LOGFILE)
-        else:
-            news_module_obj.prepare_news_summary()
+        news_module_obj.prepare_news_summary()
     except Exception as e:
         log_error_to_file(e,LOGFILE)
 
