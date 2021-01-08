@@ -1,4 +1,4 @@
-from bot_modules import *
+from bot.bot_modules import *
 
-#Start the bot
+# Start the bot
 message_handle_updater.start_polling()

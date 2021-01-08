@@ -4,7 +4,7 @@ import os
 from telegram.ext import Updater,CommandHandler, MessageHandler, Filters
 from pymongo import MongoClient
 from side_utils import get_article_text_summary,constant_refresh_db
-from news_modules import News_Modules
+from api.news_modules import News_Modules
 from gtts import lang
 
 # Conversation with user storage
